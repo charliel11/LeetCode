@@ -8,14 +8,17 @@ from loader import dynamical_loader, generate_loader_type_hint
 targets = [name.stem for name in Path("test/data/").glob("*")]
 
 
-@pytest.mark.parametrize("Target", targets)
-def test_target(Target):
-    TestCasePath = f"test/data/{Target}"
-    f = Solution(Target).__getattribute__(Target)
+@pytest.mark.parametrize("target", targets)
+def test_target(target):
+    test_case_path = f"test/data/{target}"
+    f = Solution(target).__getattribute__(target)
 
     print()
     for *args, answer in dynamical_loader(
-        Path(TestCasePath), generate_loader_type_hint(f)
+        Path(test_case_path), generate_loader_type_hint(f)
     ):
         print(args, answer)
-        assert f(*args) == answer
+        if isinstance(answer, float):
+            assert abs(f(*args) - answer) <= 1e-5
+        else:
+            assert f(*args) == answer
